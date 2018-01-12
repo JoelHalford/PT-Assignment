@@ -152,6 +152,8 @@ void loop()
     // field than the one the Zumo is experiencing now).
     // Note: fmod() is floating point modulo
     target_heading = fmod(averageHeading() + 90, 360);
+    motors.setSpeeds(0,0);
+    delay(1000);
   }
   else
   {

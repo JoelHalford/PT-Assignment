@@ -4,14 +4,14 @@
 #include <ZumoReflectanceSensorArray.h>
 
 #define LED 13
-#define MIDDLE_THRESHOLD 400
+#define MIDDLE_THRESHOLD 300
 #define LR_THRESHOLD 1500
 
 
 #define NUM_SENSORS 6
 
-#define TURN_SPEED       100
-#define TURN_DURATION    100
+#define TURN_BASE_SPEED  100
+#define TURN_DELAY       1600
 #define REVERSE_SPEED    100
 #define REVERSE_DURATION 300
 #define FORWARD_SPEED    200
@@ -30,46 +30,13 @@ ZumoMotors motors;
 ZumoReflectanceSensorArray sensors(QTR_NO_EMITTER_PIN);
 Pushbutton button(ZUMO_BUTTON); // pushbutton on pin 12
 
-
 //int incomingByte;
 String incomingString;
 
 void setup() {
   //initialize serial communications
   Serial.begin(9600);
-//  // put your setup code here, to run once:
-//    // Initialize the reflectance sensors module
-//  sensors.init();
-//
-//  // Wait for the user button to be pressed and released
-//  button.waitForButton();
-//
-//  // Turn on LED to indicate we are in calibration mode
-//  pinMode(13, OUTPUT);
-//  digitalWrite(13, HIGH);
-//
-//  // Wait 1 second and then begin automatic sensor calibration
-//  // by rotating in place to sweep the sensors over the line
-//  delay(1000);
-//  int i;
-//  for(i = 0; i < 80; i++)
-//  {
-//    if ((i > 10 && i <= 30) || (i > 50 && i <= 70))
-//      motors.setSpeeds(-200, 200);
-//    else
-//      motors.setSpeeds(200, -200);
-//    sensors.calibrate();
-//
-//    // Since our counter runs to 80, the total delay will be
-//    // 80*20 = 1600 ms.
-//    delay(20);
-//  }
-//  motors.setSpeeds(0,0);
-//
-//  // Turn off LED to indicate we are through with calibration
-//  digitalWrite(13, LOW);
-
-  // Wait for the user button to be pressed and released
+  
   digitalWrite(13, HIGH);
   button.waitForButton();
   digitalWrite(13, LOW);
@@ -84,8 +51,13 @@ void loop() {
   if (Serial.available() > 0) {
     incomingString = Serial.readString();
 
-    if (incomingString == "w") {
+    if (incomingString == "w" || incomingString == "c") {
 
+      if (incomingString == "c") {
+        Serial.println("turnC");
+        Serial.println("Turn complete.");        
+      }
+      
       roomOrCorridor();
       
       automatic = true;
@@ -100,7 +72,9 @@ void loop() {
     }
     else if (incomingString == "a") {
       Serial.println("Turning left.");
-      motors.setSpeeds(-TURN_SPEED, TURN_SPEED); //move left
+      motors.setSpeeds(-TURN_BASE_SPEED, TURN_BASE_SPEED); //move left
+      delay(TURN_DELAY);
+      motors.setSpeeds(0,0);
     }
     else if (incomingString == "s") {
       Serial.println("Reversing.");
@@ -108,16 +82,13 @@ void loop() {
     }
     else if (incomingString == "d") {
       Serial.println("Turning right.");
-      motors.setSpeeds(TURN_SPEED, -TURN_SPEED); //move right
+      motors.setSpeeds(TURN_BASE_SPEED, -TURN_BASE_SPEED); //move left
+      delay(TURN_DELAY);
+      motors.setSpeeds(0,0);
     }
     else if (incomingString == "x") {
       Serial.println("Stopping.");
       motors.setSpeeds(0, 0); //stop
-    }
-    else if (incomingString == "c") {
-      Serial.println(1);
-      incomingString = "w";
-      loop();
     }
     else if (incomingString == "rRo")
     {
@@ -173,7 +144,8 @@ else if (sensor_values[0] > LR_THRESHOLD)
 //  {
     motors.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED);
     delay(REVERSE_DURATION);
-    motors.setSpeeds(TURN_SPEED + 30, -TURN_SPEED);
+    motors.setSpeeds(TURN_BASE_SPEED + 30, -TURN_BASE_SPEED);
+    delay(100);
     motors.setSpeeds(LEFT_SPEED, FORWARD_SPEED);
 //    wallHit = 1;
 //  }
@@ -182,7 +154,8 @@ else if (sensor_values[5] > LR_THRESHOLD)
 {
     motors.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED);
     delay(REVERSE_DURATION);
-    motors.setSpeeds(-TURN_SPEED, TURN_SPEED);
+    motors.setSpeeds(-TURN_BASE_SPEED, TURN_BASE_SPEED);
+    delay(100);
     motors.setSpeeds(LEFT_SPEED, FORWARD_SPEED);
 //    wallHit = 0;
 //  }
@@ -225,4 +198,3 @@ bool roomOrCorridor() {
     rightCorridor == false;
   }
 }
-
