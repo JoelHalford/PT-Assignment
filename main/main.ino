@@ -17,12 +17,12 @@
 #define NUM_SENSORS 6
 
 //motor sensors
-#define TURN_BASE_SPEED  100
-#define TURN_DELAY       1600      //90 degree turn
-#define FINE_TURN_DELAY  1600 / 9  //10 degree fine turn
+#define TURN_BASE_SPEED  150
+#define TURN_DELAY       700      //90 degree turn
+#define FINE_TURN_DELAY  178  //10 degree fine turn
 #define REVERSE_SPEED    100       
 #define REVERSE_DURATION 300
-#define FORWARD_SPEED    200
+#define FORWARD_SPEED    150
 #define LEFT_SPEED       170
 
 unsigned int sensor_values[NUM_SENSORS];
@@ -64,24 +64,16 @@ void loop() {
  
   if (Serial.available() > 0) {
 
-
-      incomingChar = Serial.read();
-
+      Serial.flush();
+      incomingChar = Serial.read();    
     
-    
-    if (incomingChar == 'w' || incomingChar == 'c') 
+    if (incomingChar == 'w') 
     {
-      if (incomingChar == 'c') 
-      {
-        Serial.println("turnC");
-        Serial.println("Turn complete.");        
-      }
-      
       roomOrCorridor();
 
       automatic = true;
-      
-      Serial.println("Going forwards.");
+
+      Serial.println("forwards");
       while (automatic == true) //code will always run unless told to stop
       {
         incomingChar = Serial.read(); //reads serial input and places into a String variable
@@ -98,40 +90,54 @@ void loop() {
         moveAndCheckForLines();    //keep Zumo within track borders
       }
     }
+    if (incomingChar == 'c') 
+    {
+      Serial.println("turnC");
+      Serial.println("Turn complete.");        
+      
+      roomOrCorridor();
+
+      automatic = true;
+
+      while (automatic == true) //code will always run unless told to stop
+      {
+        incomingChar = Serial.read(); //reads serial input and places into a String variable
+        
+        
+        motors.setSpeeds(LEFT_SPEED, FORWARD_SPEED); //move forward
+        moveAndCheckForLines();    //keep Zumo within track borders
+      }
+    }
     else if (incomingChar == 'a') {
       Serial.println("leftTurn");
-      Serial.println("Turning left 90 degrees.");
       motors.setSpeeds(-TURN_BASE_SPEED, TURN_BASE_SPEED); //move left
       delay(TURN_DELAY);
       motors.setSpeeds(0,0);
     }
     else if (incomingChar == 'A') {
-      Serial.println("Turning left 10 degrees.");
       motors.setSpeeds(-TURN_BASE_SPEED, TURN_BASE_SPEED); //move left
       delay(FINE_TURN_DELAY);
       motors.setSpeeds(0,0);
     }
     else if (incomingChar == 's') {
-      Serial.println("Reversing.");
       motors.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED); //move backwards
     }
     else if (incomingChar == 'd') {
       Serial.println("rightTurn");
-      Serial.println("Turning right 90 degrees.");
       motors.setSpeeds(TURN_BASE_SPEED, -TURN_BASE_SPEED); //move left
       delay(TURN_DELAY);
       motors.setSpeeds(0,0);
     }
     else if (incomingChar == 'D') {
-      Serial.println("Turning right 10 degrees.");
       motors.setSpeeds(TURN_BASE_SPEED, -TURN_BASE_SPEED); //move left
       delay(FINE_TURN_DELAY);
       motors.setSpeeds(0,0);
     }
-    else if (incomingChar == 'x') {
-      Serial.println("Stopping.");
+    else if (incomingChar == 'x')
+    {
       automatic = false;
-      motors.setSpeeds(0, 0); //stop
+      motors.setSpeeds(0,0);
+      delay(100);
     }
     else if (incomingChar == 'r')
     {
@@ -187,7 +193,6 @@ sensors.read(sensor_values);
 if ((sensor_values[1] > MIDDLE_THRESHOLD) || (sensor_values[2] > MIDDLE_THRESHOLD) || (sensor_values[3] > MIDDLE_THRESHOLD) 
 || (sensor_values[4] > MIDDLE_THRESHOLD) || ((sensor_values[0] > MIDDLE_THRESHOLD) && (sensor_values[5] > MIDDLE_THRESHOLD)))
 {
-  Serial.print("Front: ");
   motors.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED);
   delay(REVERSE_DURATION);
   automatic = false;
@@ -218,28 +223,35 @@ else
 }
 
 
-bool overLine(int sensorPin) {
+bool overLine(int sensorPin) 
+{
   return sensorPin > MIDDLE_THRESHOLD;
 }
 
-bool roomOrCorridor() {
+bool roomOrCorridor() 
+{
   if (leftRoom == true) {
     Serial.print("Entering left room.\n");
+    leftRoom = false;
   }
   else if (rightRoom == true) {
     Serial.print("Entering right room.\n");
+    rightRoom = false;
   }
   else if (leftCorridor == true) {
     Serial.print("Entering right corridor.\n");
+    leftCorridor = false;
+    
   }
   else if (rightCorridor == true) {
-    Serial.print("Entering right room.\n");
+    Serial.print("Entering right corridor.\n");
+    rightCorridor = false;
   }
 }
 
-void enterRoom() {
-  
-  motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
+void enterRoom() 
+{  
+  motors.setSpeeds(LEFT_SPEED, FORWARD_SPEED);
   delay(200);
   motors.setSpeeds(0,0);  
   delay(100);
@@ -250,21 +262,22 @@ void enterRoom() {
     motors.setSpeeds(TURN_BASE_SPEED, -TURN_BASE_SPEED);
     delay(TURN_DELAY * 4 / 9);
     long duration, distance;
-    digitalWrite(trigPin, LOW);  // Added this line
-    delayMicroseconds(2); // Added this line
+    digitalWrite(trigPin, LOW);
+    delayMicroseconds(2);
     digitalWrite(trigPin, HIGH);
-  //  delayMicroseconds(1000); - Removed this line
-    delayMicroseconds(10); // Added this line
+    delayMicroseconds(10);
     digitalWrite(trigPin, LOW);
     duration = pulseIn(echoPin, HIGH);
     distance = (duration/2) / 29.1;
   
     if (distance >= 18 || distance <= 0){
-      Serial.println("Not found.");
+      
     }
     else {
       Serial.println("Object found.");
+      Serial.println("objectFound");
       motors.setSpeeds(0,0);
+      break;
     }
   }
   motors.setSpeeds(0,0);
@@ -276,20 +289,16 @@ void exitRoom() {
   {
     motors.setSpeeds(-100, -100);
     delay(200);
-    Serial.print("Left left room.\n");
-    motors.setSpeeds(TURN_BASE_SPEED, -TURN_BASE_SPEED); //move left
-    delay(TURN_DELAY);
     motors.setSpeeds(0,0);
+    Serial.print("Exited left room.\n");
     leftRoom = false;
   }
   else if (rightRoom)
   {
     motors.setSpeeds(-100, -100);
     delay(200);
-    Serial.print("Left right room.\n");
-    motors.setSpeeds(-TURN_BASE_SPEED, TURN_BASE_SPEED); //move left
-    delay(TURN_DELAY);
     motors.setSpeeds(0,0);
+    Serial.print("Exited right room.\n");
     rightRoom = false;
   }
 }

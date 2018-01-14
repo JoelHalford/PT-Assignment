@@ -1,0 +1,41 @@
+import g4p_controls.*;
+import processing.serial.*;
+
+Serial myPort;  // Create object from Serial class
+
+
+String val;        // Temp data received from the serial port
+String newVal;     //Data received from the serial port
+
+public void setup(){
+  size(480, 320, JAVA2D);
+  createGUI();
+  customGUI();
+  // Place your setup code here
+  String portName = "COM6";
+  myPort = new Serial(this, portName, 9600);
+}
+
+public void draw(){
+  background(230);
+  
+  if (myPort.available() > 0)
+  { //if data is available.
+  val = myPort.readStringUntil('\n');         // read it and store it in val
+  txtArea.appendText(val);
+  }
+  
+  if (val != null && val != newVal)
+  {
+      newVal = val;
+      txtArea.appendText(newVal); //print it out in the console
+  }
+
+  }
+}
+
+// Use this method to add additional statements
+// to customise the GUI controls
+public void customGUI(){
+
+}
