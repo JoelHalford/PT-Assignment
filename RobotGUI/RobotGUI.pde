@@ -64,7 +64,7 @@ public void draw(){
     newVal = val;
     trimmedVal = trim(val);
     
-    if ("forwards".equals(trimmedVal))  //<>//
+    if ("Moving forwards.".equals(trimmedVal)) 
     {//if forward received and no room objects have been created, create one
       if (corridors[0].getCorridorID() == "unavailable")
       {
@@ -72,7 +72,7 @@ public void draw(){
       }
     }
     
-    if ("leftTurn".equals(trimmedVal)) 
+    if ("Turned left.".equals(trimmedVal)) 
     {//if leftTurn received, add to the data array
       for (int i = 0; i < data.length; i++)
       {
@@ -83,7 +83,7 @@ public void draw(){
         }
       }
     }
-    if ("rightTurn".equals(trimmedVal)) 
+    if ("Turned right.".equals(trimmedVal)) 
     {//if rightTurn received, all rightTurn to data array
       for (int i = 0; i < data.length; i++)
       {
@@ -115,7 +115,7 @@ public void draw(){
     }
     if ("rRo".equals(trimmedVal)) 
     {//if right room button is pressed, set roomID and corridorID in rooms object and set number of rooms in corridors object
-      for (int i = 0; i < corridors.length; i++) //<>//
+      for (int i = 0; i < corridors.length; i++)
       {
         if (currentCorridor == corridors[i].getCorridorID())
         {
@@ -127,14 +127,7 @@ public void draw(){
               rooms[k].setCorridorID(currentCorridor);
               corridors[i].setRoomNum();     
               currentRoom = rooms[k].getRoomID();
-              
-              for (int n = 0; n < data.length; n++)
-              {
-                if (data[n] == null)
-                {
-                   data[n] = currentRoom; 
-                }
-              }
+
               break;
             }
           }
@@ -156,21 +149,14 @@ public void draw(){
               corridors[i].setRoomNum();     
               currentRoom = rooms[k].getRoomID();
               
-              for (int n = 0; n < data.length; n++)
-              {
-                if (data[n] == null)
-                {
-                   data[n] = currentRoom; 
-                }
-              }
               break;
-            }
+             }
           }
         }
       }
     }
     else if ("lCo".equals(trimmedVal)) 
-    {//if left corridor is selected, set corridorID in corridor object //<>//
+    {//if left corridor is selected, set corridorID in corridor object
       for (int i = 0; i < corridors.length; i++)
       {
         if (corridors[i].getCorridorID() == "unavailable")
@@ -234,6 +220,7 @@ public void draw(){
               {
                 if (arrCorridors[j] == null)
                 {
+                  data[n] = currentCorridor;
                   currentCorridor = arrCorridors[j-2];
                   arrCorridors[j] = currentCorridor; 
                   break;
@@ -248,7 +235,7 @@ public void draw(){
             {//if previous two data entries not the same it must be a new corridor, 
               corridors[i].setCorridorID("R_Corridor" + i);
               currentCorridor = corridors[i].getCorridorID();
-              txtArea.appendText("Reached" + corridors[i].getCorridorID());
+              txtArea.appendText("Reached: " + corridors[i].getCorridorID());
               data[n] = currentCorridor;
               for (int j = 0; j < arrCorridors.length; j++)
               {
@@ -291,7 +278,7 @@ public void draw(){
             {
               if (data[n] == null)
               {
-                if (data[n-1] == data[n - 2]) //<>//
+                if (data[n-1] == data[n-2])
                 {
                   for (int j = 0; j < arrCorridors.length; j++)
                   {
@@ -324,7 +311,7 @@ public void draw(){
     }
     else
     {
-      //txtArea.appendText(newVal); //print it out in the console
+      txtArea.appendText(newVal); //print it out in the console
     }
   }
 }

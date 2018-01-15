@@ -109,7 +109,7 @@ public void createGUI(){
   btnRight.setText("RIGHT 90");
   btnRight.setLocalColorScheme(GCScheme.GREEN_SCHEME);
   btnRight.addEventHandler(this, "btnRightClick");
-  txtArea = new GTextArea(this, 10, 196, 264, 108, G4P.SCROLLBARS_VERTICAL_ONLY | G4P.SCROLLBARS_AUTOHIDE);
+  txtArea = new GTextArea(this, 9, 171, 264, 132, G4P.SCROLLBARS_VERTICAL_ONLY | G4P.SCROLLBARS_AUTOHIDE);
   txtArea.setLocalColorScheme(GCScheme.CYAN_SCHEME);
   txtArea.setOpaque(true);
   txtArea.addEventHandler(this, "txtAreaChange");

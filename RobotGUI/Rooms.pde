@@ -35,6 +35,6 @@ public class Rooms {
   }
 
   public String toString() {
-    return "Room ID: " + roomID +  "\n Corridor ID: " + corridorID + "\n Object Found: " + object;
+    return "Room ID: " + roomID +  "\nCorridor ID: " + corridorID + "\nObject Found: " + object;
   }
 }

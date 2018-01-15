@@ -71,7 +71,7 @@ void loop()
 
       automatic = true;
 
-      Serial.println("forwards");
+      Serial.println("Moving forwards.");
       while (automatic == true)
       {//code will always run unless told to stop
         incomingChar = Serial.read(); //reads serial input and places into a String variable
@@ -94,7 +94,7 @@ void loop()
 
       automatic = true;
 
-      Serial.println("forwards");
+      Serial.println("Moving forwards.");
       while (automatic == true)
       {//code will always run unless told to stop
         incomingChar = Serial.read(); //reads serial input and places into a String variable
@@ -112,7 +112,7 @@ void loop()
       }
     }
     else if (incomingChar == 'a') {
-      Serial.println("leftTurn");
+      Serial.println("Turned left.");
       motors.setSpeeds(-TURN_BASE_SPEED, TURN_BASE_SPEED); //move left
       delay(TURN_DELAY);                                   //delay for set amount
       motors.setSpeeds(0,0);                               //stop motors
@@ -126,7 +126,7 @@ void loop()
       motors.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED);    //move backwards
     }
     else if (incomingChar == 'd') {
-      Serial.println("rightTurn");
+      Serial.println("Turned right.");
       motors.setSpeeds(TURN_BASE_SPEED, -TURN_BASE_SPEED); //move left
       delay(TURN_DELAY);
       motors.setSpeeds(0,0);
@@ -273,7 +273,7 @@ void enterRoom()
     }
     else 
     {//else object has been found
-      Serial.println("Object found.");
+      Serial.println("objectFound");
       motors.setSpeeds(0,0);
       break;
     }
