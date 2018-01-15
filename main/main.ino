@@ -9,25 +9,22 @@
 #define MIDDLE_THRESHOLD 400
 #define LR_THRESHOLD 1500
 
-//pins for ultra sonic sensor
+//pins for ultrasonic sensor
 #define trigPin 2
 #define echoPin 6
 
-//number of sensors
-#define NUM_SENSORS 6
+#define NUM_SENSORS 6             //the number of sensors
 
 //motor sensors
-#define TURN_BASE_SPEED  150
+#define TURN_BASE_SPEED  150      //base speed of turns
 #define TURN_DELAY       700      //90 degree turn
-#define FINE_TURN_DELAY  178  //10 degree fine turn
-#define REVERSE_SPEED    100       
-#define REVERSE_DURATION 300
-#define FORWARD_SPEED    150
-#define LEFT_SPEED       170
+#define FINE_TURN_DELAY  180      //slight turn
+#define REVERSE_SPEED    100      //reverse speed
+#define REVERSE_DURATION 300      //duration of reverse
+#define RIGHT_SPEED      150      //right speed
+#define LEFT_SPEED       170      //left speed fast to align
 
 unsigned int sensor_values[NUM_SENSORS];
-unsigned long interval = 1000;
-unsigned long previousMillis = 0;
 
 //booleans for rooms, corridors and zumo being automated
 bool automatic = false;
@@ -58,12 +55,13 @@ void setup() {
 }
 
 
-void loop() {
-  // put your main code here, to run repeatedly:
+void loop() 
+{// put your main code here, to run repeatedly:
   sensors.read(sensor_values);
  
-  if (Serial.available() > 0) {
-
+  if (Serial.available() > 0) 
+  {//if serial is available, run this
+    
       Serial.flush();
       incomingChar = Serial.read();    
     
@@ -74,45 +72,50 @@ void loop() {
       automatic = true;
 
       Serial.println("forwards");
-      while (automatic == true) //code will always run unless told to stop
-      {
+      while (automatic == true)
+      {//code will always run unless told to stop
         incomingChar = Serial.read(); //reads serial input and places into a String variable
         
         if (incomingChar == 'x')
-        {
+        {//if stop is pressed, set automatic to false, stop motors and break from the loop
           automatic = false;
           motors.setSpeeds(0,0);
           delay(100);
           break;
         }
         
-        motors.setSpeeds(LEFT_SPEED, FORWARD_SPEED); //move forward
+        motors.setSpeeds(LEFT_SPEED, RIGHT_SPEED); //move forward
         moveAndCheckForLines();    //keep Zumo within track borders
       }
     }
-    if (incomingChar == 'c') 
+    else if (incomingChar == 'c') 
     {
-      Serial.println("turnC");
-      Serial.println("Turn complete.");        
-      
       roomOrCorridor();
 
       automatic = true;
 
-      while (automatic == true) //code will always run unless told to stop
-      {
+      Serial.println("forwards");
+      while (automatic == true)
+      {//code will always run unless told to stop
         incomingChar = Serial.read(); //reads serial input and places into a String variable
         
+        if (incomingChar == 'x')
+        {//if stop is pressed, set automatic to false, stop motors and break from the loop
+          automatic = false;
+          motors.setSpeeds(0,0);
+          delay(100);
+          break;
+        }
         
-        motors.setSpeeds(LEFT_SPEED, FORWARD_SPEED); //move forward
+        motors.setSpeeds(LEFT_SPEED, RIGHT_SPEED); //move forward
         moveAndCheckForLines();    //keep Zumo within track borders
       }
     }
     else if (incomingChar == 'a') {
       Serial.println("leftTurn");
       motors.setSpeeds(-TURN_BASE_SPEED, TURN_BASE_SPEED); //move left
-      delay(TURN_DELAY);
-      motors.setSpeeds(0,0);
+      delay(TURN_DELAY);                                   //delay for set amount
+      motors.setSpeeds(0,0);                               //stop motors
     }
     else if (incomingChar == 'A') {
       motors.setSpeeds(-TURN_BASE_SPEED, TURN_BASE_SPEED); //move left
@@ -120,7 +123,7 @@ void loop() {
       motors.setSpeeds(0,0);
     }
     else if (incomingChar == 's') {
-      motors.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED); //move backwards
+      motors.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED);    //move backwards
     }
     else if (incomingChar == 'd') {
       Serial.println("rightTurn");
@@ -172,7 +175,7 @@ void loop() {
       }
     }
     else if (incomingChar == 'R')
-    {
+    {//checks first character for entering/leaving 
       incomingChar = Serial.read();
       if (incomingChar == 'E')
       {
@@ -186,50 +189,44 @@ void loop() {
   }
 }
 
-void moveAndCheckForLines() {
-
-sensors.read(sensor_values);
-
-if ((sensor_values[1] > MIDDLE_THRESHOLD) || (sensor_values[2] > MIDDLE_THRESHOLD) || (sensor_values[3] > MIDDLE_THRESHOLD) 
-|| (sensor_values[4] > MIDDLE_THRESHOLD) || ((sensor_values[0] > MIDDLE_THRESHOLD) && (sensor_values[5] > MIDDLE_THRESHOLD)))
+void moveAndCheckForLines() 
 {
-  motors.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED);
-  delay(REVERSE_DURATION);
-  automatic = false;
-  motors.setSpeeds(0,0);
-  Serial.println("Wall detected, stopping.");
-}
-
-else if (sensor_values[0] > LR_THRESHOLD)
-{   
+  sensors.read(sensor_values);
+  
+  if ((sensor_values[1] > MIDDLE_THRESHOLD) || (sensor_values[2] > MIDDLE_THRESHOLD) || (sensor_values[3] > MIDDLE_THRESHOLD) 
+  || (sensor_values[4] > MIDDLE_THRESHOLD) || ((sensor_values[0] > MIDDLE_THRESHOLD) && (sensor_values[5] > MIDDLE_THRESHOLD)))
+  {//if 2nd, 3rd, 4th, 5th, 1st and 6th sensor over threshold, stop motors
     motors.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED);
     delay(REVERSE_DURATION);
-    motors.setSpeeds(TURN_BASE_SPEED, -TURN_BASE_SPEED);
-    delay(100);
-    motors.setSpeeds(LEFT_SPEED, FORWARD_SPEED);
-}
-else if (sensor_values[5] > LR_THRESHOLD)
-{
-    motors.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED);
-    delay(REVERSE_DURATION);
-    motors.setSpeeds(-TURN_BASE_SPEED, TURN_BASE_SPEED);
-    delay(100);
-    motors.setSpeeds(LEFT_SPEED, FORWARD_SPEED);
-}
-else 
-{
-  motors.setSpeeds(LEFT_SPEED, FORWARD_SPEED);
-}
-}
-
-
-bool overLine(int sensorPin) 
-{
-  return sensorPin > MIDDLE_THRESHOLD;
+    automatic = false;
+    motors.setSpeeds(0,0);
+    Serial.println("Wall detected, stopping.");
+  }
+  
+  else if (sensor_values[0] > LR_THRESHOLD)
+  {//if first sensor is above threshold, reverse and adjust then continue forwards
+      motors.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED);
+      delay(REVERSE_DURATION);
+      motors.setSpeeds(TURN_BASE_SPEED, -TURN_BASE_SPEED);
+      delay(100);
+      motors.setSpeeds(LEFT_SPEED, RIGHT_SPEED);
+  }
+  else if (sensor_values[5] > LR_THRESHOLD)
+  {//if last sensor is above threshold, reverse and adjust then continue forwards
+      motors.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED);
+      delay(REVERSE_DURATION);
+      motors.setSpeeds(-TURN_BASE_SPEED, TURN_BASE_SPEED);
+      delay(100);
+      motors.setSpeeds(LEFT_SPEED, RIGHT_SPEED);
+  }
+  else 
+  {
+    motors.setSpeeds(LEFT_SPEED, RIGHT_SPEED);
+  }
 }
 
 bool roomOrCorridor() 
-{
+{//checks if room/corridor is true then sends relevant message
   if (leftRoom == true) {
     Serial.print("Entering left room.\n");
     leftRoom = false;
@@ -250,17 +247,18 @@ bool roomOrCorridor()
 }
 
 void enterRoom() 
-{  
-  motors.setSpeeds(LEFT_SPEED, FORWARD_SPEED);
+{//enters room slightly, turns 90 degrees and proceeds to scan room 
+  motors.setSpeeds(LEFT_SPEED, RIGHT_SPEED);
   delay(200);
   motors.setSpeeds(0,0);  
   delay(100);
   motors.setSpeeds(-TURN_BASE_SPEED, TURN_BASE_SPEED);
   delay(TURN_DELAY);
   
-  for (int x = 0; x < 9; x++) {
+  for (int x = 0; x < 9; x++) 
+  {//scans 9 times in 180 degree motion, stops when detected an object
     motors.setSpeeds(TURN_BASE_SPEED, -TURN_BASE_SPEED);
-    delay(TURN_DELAY * 4 / 9);
+    delay(TURN_DELAY * 2 / 9);
     long duration, distance;
     digitalWrite(trigPin, LOW);
     delayMicroseconds(2);
@@ -270,12 +268,12 @@ void enterRoom()
     duration = pulseIn(echoPin, HIGH);
     distance = (duration/2) / 29.1;
   
-    if (distance >= 18 || distance <= 0){
-      
+    if (distance >= 18 || distance <= 0)
+    {//if object out of bounds or doesn't exist, ignore
     }
-    else {
+    else 
+    {//else object has been found
       Serial.println("Object found.");
-      Serial.println("objectFound");
       motors.setSpeeds(0,0);
       break;
     }
@@ -283,8 +281,8 @@ void enterRoom()
   motors.setSpeeds(0,0);
   
 }
-void exitRoom() {
-
+void exitRoom() 
+{//reverses slightly, exiting the room. Sets leftRoom/rightRoom to false
   if (leftRoom)
   {
     motors.setSpeeds(-100, -100);
@@ -302,4 +300,3 @@ void exitRoom() {
     rightRoom = false;
   }
 }
-

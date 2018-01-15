@@ -6,8 +6,8 @@ Serial myPort;  // Create object from Serial class
 Corridors[] corridors = new Corridors[10];    //Object array for corridors
 Rooms[] rooms = new Rooms[20];                //Object array for rooms
 
-String[] roomID;
-String[] corridorID;
+String[] arrRooms;
+String[] arrCorridors;
 String[] data;
 
 String val;              //Temp data received from the serial port
@@ -18,20 +18,20 @@ String currentRoom;      //keep track of current room
 
 String corridorName;    //Keeps the latest corridorName in a string
 String roomName;        //keeps the latest roomNamae in a string
-int numOfCorridors;     //tracks the number of corridors
 
-public void setup(){
+public void setup()
+{
   size(480, 320, JAVA2D);
   createGUI();
   customGUI();
   
   
-  String portName = "COM7";                    //comms for xbee
-  myPort = new Serial(this, portName, 9600);
+  String portName = "COM9";                     //comms for xbee
+  myPort = new Serial(this, portName, 9600);    //setup for serial port
   
-  roomID = new String[100];                   //initialize roomID array
-  corridorID = new String[100];               //initialize corridorID array
-  data = new String[100];                     //initialize data array
+  arrRooms = new String[100];                   //initialize arrRooms array
+  arrCorridors = new String[100];               //initialize arrCorrs array
+  data = new String[100];                       //initialize data array
   
   for (int i = 0; i < corridors.length; i++)
   {
@@ -69,7 +69,6 @@ public void draw(){
       if (corridors[0].getCorridorID() == "unavailable")
       {
         corridors[0].setCorridorID("Corridor"+ 0);
-        txtArea.appendText(corridors[0].getCorridorID());
       }
     }
     
@@ -79,6 +78,7 @@ public void draw(){
       {
         if (data[i] == null) {
           data[i] = "LeftTurn";
+          btnRight.setEnabled(true);
           break;
         }
       }
@@ -89,6 +89,7 @@ public void draw(){
       {
         if (data[i] == null) {
           data[i] = "RightTurn";
+          btnLeft.setEnabled(true);
           break;
         }
       }
@@ -121,11 +122,19 @@ public void draw(){
           for (int k = 0; k < rooms.length; k++)
           {
             if (rooms[k].getRoomID() == "unavailable")
-            {              
+            { 
               rooms[k].setRoomID("R_Room" + k);
               rooms[k].setCorridorID(currentCorridor);
               corridors[i].setRoomNum();     
               currentRoom = rooms[k].getRoomID();
+              
+              for (int n = 0; n < data.length; n++)
+              {
+                if (data[n] == null)
+                {
+                   data[n] = currentRoom; 
+                }
+              }
               break;
             }
           }
@@ -146,6 +155,14 @@ public void draw(){
               rooms[k].setCorridorID(currentCorridor);
               corridors[i].setRoomNum();     
               currentRoom = rooms[k].getRoomID();
+              
+              for (int n = 0; n < data.length; n++)
+              {
+                if (data[n] == null)
+                {
+                   data[n] = currentRoom; 
+                }
+              }
               break;
             }
           }
@@ -153,9 +170,7 @@ public void draw(){
       }
     }
     else if ("lCo".equals(trimmedVal)) 
-    {//if left corridor is selected, set corridorID in corridor object
-      numOfCorridors++; //<>//
-
+    {//if left corridor is selected, set corridorID in corridor object //<>//
       for (int i = 0; i < corridors.length; i++)
       {
         if (corridors[i].getCorridorID() == "unavailable")
@@ -166,16 +181,34 @@ public void draw(){
           {
             if (data[n-1] == data[n - 2])
             {//if previous two data entries are the same (i.e. two left turns), knows robot is returning to previous corridor
-              txtArea.appendText("Returning to " + corridors[i-2].getCorridorID());
-              currentCorridor = corridors[i-2].getCorridorID();
+            
+              for (int j = 0; j < arrCorridors.length; j++)
+              {
+                if (arrCorridors[j] == null)
+                {
+                  currentCorridor = arrCorridors[j-2];
+                  arrCorridors[j] = currentCorridor; 
+                  break;
+                }
+              }
+            
+              txtArea.appendText("Returning to " + currentCorridor);
               break;
             }
             else
             {//if previous two data entries not the same it must be a new corridor, 
               corridors[i].setCorridorID("L_Corridor" + i);
               currentCorridor = corridors[i].getCorridorID();
-              txtArea.appendText(corridors[i].getCorridorID());
+              txtArea.appendText("Reached: " + corridors[i].getCorridorID());
               data[n] = currentCorridor;
+              for (int j = 0; j < arrCorridors.length; j++)
+              {
+                if (arrCorridors[j] == null)
+                {
+                  arrCorridors[j] = currentCorridor; 
+                  break;
+                }
+              }
               break;
             }
             }
@@ -186,8 +219,6 @@ public void draw(){
     }
     else if ("rCo".equals(trimmedVal)) 
     {//if right corridor is selected, set corridorID in corridor object
-      numOfCorridors++;
-
       for (int i = 0; i < corridors.length; i++)
       {
         if (corridors[i].getCorridorID() == "unavailable")
@@ -198,17 +229,35 @@ public void draw(){
           {
             if (data[n-1] == data[n - 2])
             {//if previous two data entries are the same (i.e. two left turns), knows robot is returning to previous corridor
-              txtArea.appendText("Returning to " + corridors[i-2].getCorridorID());
-              currentCorridor = corridors[i-2].getCorridorID();
-              data[n] = currentCorridor;
+              
+              for (int j = 0; j < arrCorridors.length; j++)
+              {
+                if (arrCorridors[j] == null)
+                {
+                  currentCorridor = arrCorridors[j-2];
+                  arrCorridors[j] = currentCorridor; 
+                  break;
+                }
+              }
+            
+              txtArea.appendText("Returning to " + currentCorridor);
+              
               break;
             }
             else
             {//if previous two data entries not the same it must be a new corridor, 
               corridors[i].setCorridorID("R_Corridor" + i);
               currentCorridor = corridors[i].getCorridorID();
-              txtArea.appendText(corridors[i].getCorridorID());
+              txtArea.appendText("Reached" + corridors[i].getCorridorID());
               data[n] = currentCorridor;
+              for (int j = 0; j < arrCorridors.length; j++)
+              {
+                if (arrCorridors[j] == null)
+                {
+                  arrCorridors[j] = currentCorridor; 
+                  break;
+                }
+              }
               break;
             }
             }
@@ -230,6 +279,8 @@ public void draw(){
     }
     else if ("Wall detected, stopping.".equals(trimmedVal))
     {
+      txtArea.appendText(trimmedVal);
+      
       if (corridors[1].getCorridorID() != "unavailable")
       {
         for (int i = 0; i < corridors.length; i++)
@@ -240,19 +291,30 @@ public void draw(){
             {
               if (data[n] == null)
               {
-                if (data[n-1] == data[n - 2])
+                if (data[n-1] == data[n - 2]) //<>//
                 {
-                  for (int h  = 0; h < data.length; h++)
+                  for (int j = 0; j < arrCorridors.length; j++)
                   {
-                    if (data[h] != null)
+                    if (arrCorridors[j] == null)
                     {
-                    txtArea.appendText(data[h]);
+                      currentCorridor = arrCorridors[j-2];
+                      
+                      if (currentCorridor.charAt(0) == 'R')
+                      {
+                        btnLeft.setEnabled(false);
+                      }
+                      else if (currentCorridor.charAt(0) == 'L')
+                      {
+                        btnRight.setEnabled(false); 
+                      }
+                      break;
                     }
                   }
-                  txtArea.appendText("Returning to " + corridors[i-2].getCorridorID());
-                  currentCorridor = corridors[i-2].getCorridorID();
+                  
+                  txtArea.appendText("Returning to " + currentCorridor);
                   break;
                 }
+                break;
               }
             }
             break;
@@ -262,13 +324,12 @@ public void draw(){
     }
     else
     {
-      txtArea.appendText(newVal); //print it out in the console
+      //txtArea.appendText(newVal); //print it out in the console
     }
   }
 }
 // Use this method to add additional statements
 // to customise the GUI controls
-
-public void customGUI(){
-
+public void customGUI()
+{
 }

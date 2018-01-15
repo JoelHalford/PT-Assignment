@@ -62,10 +62,6 @@ public void lCorridorClick(GButton source, GEvent event) { //_CODE_:leftCorridor
   myPort.write('C');  
 } //_CODE_:leftCorridor:981707:
 
-public void txtInfoChange(GTextArea source, GEvent event) { //_CODE_:txtInfo:729577:
-  println("currentSpeed - GTextArea >> GEvent." + event + " @ " + millis());
-} //_CODE_:txtInfo:729577:
-
 public void enterRoomClick(GButton source, GEvent event) { //_CODE_:enterRoom:724204:
   myPort.write('R'); 
   myPort.write('E');
@@ -133,9 +129,6 @@ public void createGUI(){
   leftCorridor = new GButton(this, 280, 36, 80, 32);
   leftCorridor.setText("Left Corridor");
   leftCorridor.addEventHandler(this, "lCorridorClick");
-  txtInfo = new GTextArea(this, 284, 265, 160, 32, G4P.SCROLLBARS_NONE);
-  txtInfo.setOpaque(true);
-  txtInfo.addEventHandler(this, "txtInfoChange");
   enterRoom = new GButton(this, 278, 196, 80, 30);
   enterRoom.setText("Enter Room");
   enterRoom.addEventHandler(this, "enterRoomClick");
@@ -163,7 +156,6 @@ GButton rightCorridor;
 GButton rightRoom; 
 GButton leftRoom; 
 GButton leftCorridor; 
-GTextArea txtInfo; 
 GButton enterRoom; 
 GButton roomExit; 
 GButton fineTurnRight; 
