@@ -1,3 +1,5 @@
+//This code uses G4P which was created by Peter Lager
+
 import g4p_controls.*;
 import processing.serial.*;
 
